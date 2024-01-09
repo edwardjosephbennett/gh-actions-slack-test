@@ -1,52 +1,69 @@
 name: learn-github-actions
 run-name: ${{ github.actor }} is learning GitHub Actions
-on: [push]
+# Limit how many instances of this workflow a pull request
+# can run at once.
+# Upon commit, if a instance is in progress for the same
+# pull request, cancel it. The latest workflow is
+# the priority.
+concurrency:
+  group: pull-request-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+on:
+    push:
+
+    # Manually trigger the workflow from the "Actions"
+    # tab in the GitHub repo.
+    workflow_dispatch:
 
 jobs:
   new_push_job:
     runs-on: ubuntu-latest
     name: New push to repo
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN}}
     steps:
-      - name: Send GitHub trigger payload to Slack Workflow Builder
-        id: slack
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: |
-            {
-              "text": "Danny Torrence left a 1 star review for your property.",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Danny Torrence left the following review for your property:"
+    - id: slack
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        channel-id: "DJGLJLLFK"
+        payload: |
+           {
+            "text": "Deployment started (In Progress)",
+            "attachments": [
+              {
+                "pretext": "Deployment started",
+                "color": "dbab09",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "short": true,
+                    "value": "In Progress"
                   }
-                },
-                {
-                  "type": "section",
-                  "block_id": "section567",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "<https://example.com|Overlook Hotel> \\n :star: \\n Doors had too many axe holes, guest in room 237 was far too rowdy, whole place felt stuck in the 1920s."
-                  },
-                  "accessory": {
-                    "type": "image",
-                    "image_url": "https://is5-ssl.mzstatic.com/image/thumb/Purple3/v4/d3/72/5c/d3725c8f-c642-5d69-1904-aa36e4297885/source/256x256bb.jpg",
-                    "alt_text": "Haunted hotel image"
+                ]
+              }
+            ]
+          }
+    - id: update-message
+      uses: slackapi/slack-github-action@v1.24.0
+      env:
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN}}
+      with:
+        channel-id: "DJGLJLLFK"
+        update-ts: ${{ steps.slack.outputs.ts }}
+        payload: |
+          {
+            "text": "Deployment finished (Completed)",
+            "attachments": [
+              {
+                "pretext": "Deployment finished",
+                "color": "28a745",
+                "fields": [
+                  {
+                    "title": "Status",
+                    "short": true,
+                    "value": "Completed"
                   }
-                },
-                {
-                  "type": "section",
-                  "block_id": "section789",
-                  "fields": [
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Average Rating*\\n1.0"
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+                ]
+              }
+            ]
+          }
