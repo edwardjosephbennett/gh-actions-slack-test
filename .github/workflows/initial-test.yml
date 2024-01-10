@@ -16,54 +16,30 @@ on:
     workflow_dispatch:
 
 jobs:
-  new_push_job:
+  send_slack_message:
     runs-on: ubuntu-latest
-    name: New push to repo
+    name: Send Slack Message
     env:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN}}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      WORKFLOW_DEPLOYED_BY: ${{ github.actor }}
     steps:
-    - id: slack
-      uses: slackapi/slack-github-action@v1.24.0
-      with:
-        channel-id: "DJGLJLLFK"
-        payload: |
-           {
-            "text": "Deployment started (In Progress)",
-            "attachments": [
-              {
-                "pretext": "Deployment started",
-                "color": "dbab09",
-                "fields": [
-                  {
-                    "title": "Status",
-                    "short": true,
-                    "value": "In Progress"
-                  }
-                ]
-              }
-            ]
-          }
-    - id: update-message
-      uses: slackapi/slack-github-action@v1.24.0
-      env:
-        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN}}
-      with:
-        channel-id: "DJGLJLLFK"
-        update-ts: ${{ steps.slack.outputs.ts }}
-        payload: |
-          {
-            "text": "Deployment finished (Completed)",
-            "attachments": [
-              {
-                "pretext": "Deployment finished",
-                "color": "28a745",
-                "fields": [
-                  {
-                    "title": "Status",
-                    "short": true,
-                    "value": "Completed"
-                  }
-                ]
-              }
-            ]
-          }
+      - name: "Checkout Repo"
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+
+      - name: "Get template json"
+        id: getjson
+        run: |
+          echo "SLACK_TEMPLATE=$(jq -c . < ./.github/workflows/slack-message-template.json)" >> $GITHUB_OUTPUT
+
+      - name: "Output JSON"
+        run: |
+          echo ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
+
+      - name: "Post to Slack"
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "CJGLJLN1F"
+          payload: ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
