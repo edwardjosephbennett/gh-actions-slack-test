@@ -19,7 +19,7 @@
         {
           "title": "Username",
           "short": true,
-          "value": "${{ env.WORKFLOW_DEPLOYED_BY }}"
+          "value": .username
         }
       ]
     }

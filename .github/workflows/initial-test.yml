@@ -21,7 +21,6 @@ jobs:
     name: Send Slack Message
     env:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      WORKFLOW_DEPLOYED_BY: ${{ github.actor }}
     steps:
       - name: "Checkout Repo"
         uses: actions/checkout@v4
@@ -32,14 +31,19 @@ jobs:
       - name: "Get template json"
         id: getjson
         run: |
-          echo "SLACK_TEMPLATE=$(jq -c . < ./.github/workflows/slack-message-template.json)" >> $GITHUB_OUTPUT
+          jq=$(echo '{"username": "${{ github.actor }}" }' | jq -c -r -f ./.github/workflows/slack-message-template.jq)
+          echo "SLACK_TEMPLATE=$($jq)" >> $GITHUB_OUTPUT
 
-      - name: "Output JSON"
+      - name: "Populate Template"
+        id: populateTemplate
         run: |
-          echo $(steps.getjson.outputs.SLACK_TEMPLATE)
+          echo "${{ steps.getjson.outputs.SLACK_TEMPLATE }}"
+          
 
-      - name: "Post to Slack"
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          channel-id: "CJGLJLN1F"
-          payload: ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
+#      - name: "Post to Slack"
+#        uses: slackapi/slack-github-action@v1.24.0
+#        env:
+#          WORKFLOW_DEPLOYED_BY: ${{ github.actor }}
+#        with:
+#          channel-id: "CJGLJLN1F"
+#          payload: ${{ steps.populateTemplate.outputs.POPULATED_TEMPLATE }}
