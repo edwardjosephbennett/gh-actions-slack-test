@@ -36,7 +36,7 @@ jobs:
 
       - name: "Output JSON"
         run: |
-          echo ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
+          echo $(steps.getjson.outputs.SLACK_TEMPLATE)
 
       - name: "Post to Slack"
         uses: slackapi/slack-github-action@v1.24.0
