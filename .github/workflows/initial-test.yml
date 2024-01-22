@@ -37,16 +37,8 @@ jobs:
             jq '.[] | tostring')" 
             >> $GITHUB_OUTPUT
 
-      - name: "Populate Template"
-        id: populateTemplate
-        run: |
-          echo "${{ steps.getjson.outputs.SLACK_TEMPLATE }}"
-          
-
-#      - name: "Post to Slack"
-#        uses: slackapi/slack-github-action@v1.24.0
-#        env:
-#          WORKFLOW_DEPLOYED_BY: ${{ github.actor }}
-#        with:
-#          channel-id: "CJGLJLN1F"
-#          payload: ${{ steps.populateTemplate.outputs.POPULATED_TEMPLATE }}
+      - name: "Post to Slack"
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "CJGLJLN1F"
+          payload: ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
