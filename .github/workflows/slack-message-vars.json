@@ -1,0 +1,4 @@
+{
+  "username": "${{ github.actor }}",
+  "repository": "${{ github.repository }}"
+}

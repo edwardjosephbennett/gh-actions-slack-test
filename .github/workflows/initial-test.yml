@@ -31,8 +31,9 @@ jobs:
       - name: "Set up template variables"
         id: template_vars
         run: |
-          ORIG_JSON='{"username": "${{ github.actor }}"}'
-          RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
+          JSON_FROM_FILE=$(cat ./.github/workflows/slack-message-vars.json | jq .)
+          JSON_EXPANDED="$JSON_FROM_FILE"
+          RESULT=$(echo "$JSON_EXPANDED" | jq -c '. | tostring')
           echo "Processed JSON: $RESULT"
           echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
 
@@ -51,8 +52,6 @@ jobs:
 
       - name: "Post to Slack"
         uses: slackapi/slack-github-action@v1.24.0
-        env:
-          PAYLOAD: $(echo
         with:
           channel-id: "CJGLJLN1F"
           payload-file-path: './slack-message.json'
