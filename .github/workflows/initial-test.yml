@@ -32,13 +32,19 @@ jobs:
         id: template_vars
         run: |
           ORIG_JSON='{"username": "${{ github.actor }}"}'
-          RESULT=$(echo "$ORIG_JSON" | jq -c .)
-          echo "Processed JSON: $RESULT";
+          RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
+          echo "Processed JSON: $RESULT"
           echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
 
-#      - name: "Set up the Slack Template"
-#        id: slack_template
-#        run: >-
+      - name: "Set up the Slack Template"
+        id: slack_template
+        run: |
+          TEMPLATE_VARS="${{ steps.template_vars.outputs.FINAL }}"
+          FILTERED_TEMPLATE=$(echo "$TEMPLATE_VARS" | jq -f './.github/workflows/slack-message-template.jq' | jq '. | tostring')
+          echo "$FILTERED_TEMPLATE"
+          echo "F_TEMPLATE=$FILTERED_TEMPLATE" >> $GITHUB_OUTPUT
+          
+
 #          echo "SLACK_TEMPLATE=$(
 #            echo ${{ toJSON(steps.template_vars.outputs.SLACK_TEMPLATE_VARS) }} |
 #            jq -f './.github/workflows/slack-message-template.jq' |
