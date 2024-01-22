@@ -32,8 +32,9 @@ jobs:
         id: getjson
         run: >
           SLACK_TEMPLATE_VARS='{"username": "${{github.actor}}"}'
-          SLACK_TEMPLATE=$(echo $SLACK_TEMPLATE_VARS | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring') 
-          echo $SLACK_TEMPLATE >> $GITHUB_OUTPUT
+          SLACK_TEMPLATE="$(echo $SLACK_TEMPLATE_VARS | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring')"
+          echo "$SLACK_TEMPLATE";
+          echo "THETEMPLATE=$SLACK_TEMPLATE" >> "$GITHUB_OUTPUT"
 
       - name: Dump steps context
         env:
@@ -44,4 +45,4 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           channel-id: "CJGLJLN1F"
-          payload: ${{ steps.getjson.outputs.SLACK_TEMPLATE }}
+          payload: ${{ steps.getjson.outputs.THETEMPLATE }}
