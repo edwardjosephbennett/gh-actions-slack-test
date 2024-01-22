@@ -31,7 +31,7 @@ jobs:
       - name: "Set up template variables"
         id: template_vars
         run: |
-          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}" }'
+          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}", "deployment": "https://github.com/edwardjosephbennett/gh-actions-slack-test/actions/runs/${{ github.run_id }}" }'
           RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
           echo "Processed JSON: $RESULT"
           echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
