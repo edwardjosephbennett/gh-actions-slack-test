@@ -28,21 +28,23 @@ jobs:
           sparse-checkout: |
             .github
 
-      - name: "Get template json"
+      - name: "Set up template variables"
+        id: template_vars
+        run: |
+          echo "SLACK_TEMPLATE_VARS='{"username": "${{github.actor}}"}'" >> $GITHUB_OUTPUT
+
+      - name: "Set up the Slack Template"
         id: getjson
         run: >
-          SLACK_TEMPLATE_VARS='{"username": "${{github.actor}}"}'
-          SLACK_TEMPLATE="$(echo $SLACK_TEMPLATE_VARS | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring')"
-          echo "$SLACK_TEMPLATE";
-          echo "THETEMPLATE=$SLACK_TEMPLATE" >> "$GITHUB_OUTPUT"
+          echo "SLACK_TEMPLATE="$(echo ${{ steps.template_vars.outputs.SLACK_TEMPLATE_VARS }} | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring')"" >> GITHUB_OUTPUT
 
-      - name: Dump steps context
+      - name: "Dump steps context"
         env:
           STEPS_CONTEXT: ${{ toJson(steps) }}
         run: echo "$STEPS_CONTEXT"
 
-      - name: "Post to Slack"
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          channel-id: "CJGLJLN1F"
-          payload: ${{ steps.getjson.outputs.THETEMPLATE }}
+#      - name: "Post to Slack"
+#        uses: slackapi/slack-github-action@v1.24.0
+#        with:
+#          channel-id: "CJGLJLN1F"
+#          payload: ${{ steps.getjson.outputs.THETEMPLATE }}
