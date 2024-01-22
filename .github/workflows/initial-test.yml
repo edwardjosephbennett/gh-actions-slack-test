@@ -32,8 +32,7 @@ jobs:
         id: getjson
         run: >
           SLACK_TEMPLATE_VARS='{"username": "${{github.actor}}"}'
-          SLACK_MESSAGE_TEMPLATE="./.github/workflows/slack-message-template.jq"
-          SLACK_TEMPLATE=$(echo $SLACK_TEMPLATE_VARS | jq -f $SLACK_MESSAGE_TEMPLATE | jq '.[] | tostring') 
+          SLACK_TEMPLATE=$(echo $SLACK_TEMPLATE_VARS | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring') 
           echo $SLACK_TEMPLATE >> $GITHUB_OUTPUT
 
       - name: "Post to Slack"
