@@ -31,7 +31,10 @@ jobs:
       - name: "Set up template variables"
         id: template_vars
         run: |
-          echo "SLACK_TEMPLATE_VARS=$(jq -n --arg user \"${{ github.actor }}\" '{author: $user}')" >> $GITHUB_OUTPUT
+          ORIG_JSON='{"username": "${{ github.actor }}"}'
+          RESULT=$(echo "$ORIG_JSON" | jq -c .)
+          echo "Processed JSON: $RESULT";
+          echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
 
 #      - name: "Set up the Slack Template"
 #        id: slack_template
