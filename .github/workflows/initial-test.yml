@@ -31,7 +31,7 @@ jobs:
       - name: "Get template json"
         id: getjson
         run: |
-          echo "SLACK_TEMPLATE=$(echo '{"username": "${{ github.actor }}" }' | jq -c -r -f './.github/workflows/slack-message-template.jq' | jq)" >> $GITHUB_OUTPUT
+          echo "SLACK_TEMPLATE=$(echo '{"username": "${{ github.actor }}" }' | jq -c -r -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring')" >> $GITHUB_OUTPUT
 
       - name: "Populate Template"
         id: populateTemplate
