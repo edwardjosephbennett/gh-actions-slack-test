@@ -40,10 +40,9 @@ jobs:
         id: slack_template
         run: |
           TEMPLATE_VARS="${{ steps.template_vars.outputs.FINAL }}"
-          FILTERED_TEMPLATE=$(echo "$TEMPLATE_VARS" | jq -f './.github/workflows/slack-message-template.jq' | jq '. | tostring')
+          FILTERED_TEMPLATE=$(echo "$TEMPLATE_VARS" | jq -f './.github/workflows/slack-message-template.jq')
           echo "$FILTERED_TEMPLATE"
-          echo "F_TEMPLATE=$FILTERED_TEMPLATE" >> $GITHUB_OUTPUT
-          
+          echo "$FILTERED_TEMPLATE" >> ./slack-message.json
 
       - name: "Dump steps context"
         env:
@@ -52,7 +51,8 @@ jobs:
 
       - name: "Post to Slack"
         uses: slackapi/slack-github-action@v1.24.0
+        env:
+          PAYLOAD: $(echo
         with:
           channel-id: "CJGLJLN1F"
-          payload: |
-            echo $( echo ${{ steps.slack_template.outputs.F_TEMPLATE }} | jq .)
+          payload-file-path: './slack-message.json'
