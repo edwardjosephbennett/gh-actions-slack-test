@@ -31,11 +31,19 @@ jobs:
       - name: "Set up template variables"
         id: template_vars
         run: |
-          JSON_FROM_FILE=$(cat ./.github/workflows/slack-message-vars.json | jq .)
-          JSON_EXPANDED="$JSON_FROM_FILE"
-          RESULT=$(echo "$JSON_EXPANDED" | jq -c '. | tostring')
+          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}" }'
+          RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
           echo "Processed JSON: $RESULT"
           echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
+
+#      - name: "Set up template variables"
+#        id: template_vars
+#        run: |
+#          JSON_FROM_FILE=$(cat ./.github/workflows/slack-message-vars.json | jq .)
+#          JSON_EXPANDED="$JSON_FROM_FILE"
+#          RESULT=$(echo "$JSON_EXPANDED" | jq -c '. | tostring')
+#          echo "Processed JSON: $RESULT"
+#          echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
 
       - name: "Set up the Slack Template"
         id: slack_template
