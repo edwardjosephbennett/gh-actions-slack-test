@@ -35,6 +35,11 @@ jobs:
           SLACK_TEMPLATE=$(echo $SLACK_TEMPLATE_VARS | jq -f './.github/workflows/slack-message-template.jq' | jq '.[] | tostring') 
           echo $SLACK_TEMPLATE >> $GITHUB_OUTPUT
 
+      - name: Dump steps context
+        env:
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+        run: echo "$STEPS_CONTEXT"
+
       - name: "Post to Slack"
         uses: slackapi/slack-github-action@v1.24.0
         with:
