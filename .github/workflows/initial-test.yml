@@ -69,11 +69,16 @@ jobs:
     needs: [build_slack_message]
     env:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
     steps:
       - name: "Get template file from Artifacts"
         uses: actions/download-artifact@v4
         with:
           name: deployment-template
+
+      - name: "DEBUG"
+        run: |
+          ls -a
 
       # Post our message to slack
       # We use the SLACK_CHANNEL_ID we have stored in the repos secrets
