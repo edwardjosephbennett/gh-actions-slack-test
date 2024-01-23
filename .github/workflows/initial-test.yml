@@ -19,8 +19,6 @@ jobs:
   build_slack_message:
     runs-on: ubuntu-latest
     name: "Build Slack Message Template"
-    env:
-      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
     steps:
       # Checkout the current repository
@@ -69,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     name: "Post message to Slack"
     needs: [build_slack_message]
+    env:
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
     steps:
       - name: "Get template file from Artifacts"
         uses: actions/download-artifact@v4
