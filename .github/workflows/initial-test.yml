@@ -16,9 +16,9 @@ on:
     workflow_dispatch:
 
 jobs:
-  send_slack_message:
+  build_slack_message:
     runs-on: ubuntu-latest
-    name: "Send Slack Message"
+    name: "Build Slack Message Template"
     env:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
@@ -56,6 +56,24 @@ jobs:
           SLACK_TEMPLATE_VARS="${{ steps.template_vars.outputs.SLACK_TEMPLATE_VARS_AS_STRING }}"
           FILTERED_SLACK_TEMPLATE=$(echo "$SLACK_TEMPLATE_VARS" | jq -f './.github/workflows/slack/templates/deployment.jq')
           echo "$FILTERED_SLACK_TEMPLATE" >> ./.github/workflows/slack/templates/deployment-compiled.json
+
+      - name: "Save template file"
+        id: save_template_file
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-template
+          path: "./.github/workflows/slack/templates/deployment-compiled.json"
+          retention-days: 0.25
+
+  post_slack_message:
+    runs-on: ubuntu-latest
+    name: "Post message to Slack"
+
+    steps:
+      - name: "Get template file from Artifacts"
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-template
 
       # Post our message to slack
       # We use the SLACK_CHANNEL_ID we have stored in the repos secrets
