@@ -20,6 +20,15 @@
 						}
 					]
 				},
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "/giphy hello"
+                        }
+                    ]
+                },
 				{
 					"type": "rich_text_list",
 					"style": "bullet",

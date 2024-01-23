@@ -28,10 +28,12 @@ jobs:
           sparse-checkout: |
             .github
 
+      # Set up the variables for the Slack message template
+      # These need to be in JSON format
       - name: "Set up template variables"
         id: template_vars
         run: |
-          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}", "deployment": "https://github.com/edwardjosephbennett/gh-actions-slack-test/actions/runs/${{ github.run_id }}" }'
+          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}", "deployment": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
           RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
           echo "Processed JSON: $RESULT"
           echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
@@ -45,6 +47,8 @@ jobs:
 #          echo "Processed JSON: $RESULT"
 #          echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
 
+      # Create the final Slack template
+      # Echo it out into a json file for passing to the next step
       - name: "Set up the Slack Template"
         id: slack_template
         run: |
