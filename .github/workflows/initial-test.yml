@@ -68,7 +68,7 @@ jobs:
   post_slack_message:
     runs-on: ubuntu-latest
     name: "Post message to Slack"
-
+    needs: [build_slack_message]
     steps:
       - name: "Get template file from Artifacts"
         uses: actions/download-artifact@v4
