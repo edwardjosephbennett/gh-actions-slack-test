@@ -76,10 +76,6 @@ jobs:
         with:
           name: deployment-template
 
-      - name: "DEBUG"
-        run: |
-          ls -a
-
       # Post our message to slack
       # We use the SLACK_CHANNEL_ID we have stored in the repos secrets
       # We pass our compiled JSON file to the action to send to the channel
@@ -87,4 +83,4 @@ jobs:
         uses: slackapi/slack-github-action@v1.24.0
         with:
           channel-id: "${{ secrets.SLACK_CHANNEL_ID }}"
-          payload-file-path: './.github/workflows/slack/templates/deployment-compiled.json'
+          payload-file-path: './deployment-compiled.json'
