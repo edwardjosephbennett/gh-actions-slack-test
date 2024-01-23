@@ -1,8 +1,8 @@
-name: learn-github-actions
-run-name: ${{ github.actor }} is learning GitHub Actions
+name: "Send Slack Message"
+run-name: Send Slack Message
 # Limit how many instances of this workflow a pull request
 # can run at once.
-# Upon commit, if a instance is in progress for the same
+# Upon commit, if an instance is in progress for the same
 # pull request, cancel it. The latest workflow is
 # the priority.
 concurrency:
@@ -18,52 +18,50 @@ on:
 jobs:
   send_slack_message:
     runs-on: ubuntu-latest
-    name: Send Slack Message
+    name: "Send Slack Message"
     env:
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
     steps:
+      # Checkout the current repository
+      # Only use the .github folder in the repo as that is all we need
       - name: "Checkout Repo"
         uses: actions/checkout@v4
+        id: checkout_repo
         with:
           sparse-checkout: |
             .github
 
       # Set up the variables for the Slack message template
-      # These need to be in JSON format
+      # These need to be in JSON object format
+      # DICTIONARY - This is a JSON object that contains variable data for replacement within the template
+      # VARIABLES - This is a string representation of the DICTIONARY
+      # Example: {"username": "${{ github.actor }}"} will use the current user as the value of Username in the template
+      # This must be converted to a string to store it in $GITHUB_OUTPUT, so we use the jq utility to convert it
+      # @todo - Refactor this to use an external file to help keep this file cleaner
       - name: "Set up template variables"
         id: template_vars
         run: |
-          ORIG_JSON='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}", "deployment": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
-          RESULT=$(echo "$ORIG_JSON" | jq -c '. | tostring')
-          echo "Processed JSON: $RESULT"
-          echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
-
-#      - name: "Set up template variables"
-#        id: template_vars
-#        run: |
-#          JSON_FROM_FILE=$(cat ./.github/workflows/slack-message-vars.json | jq .)
-#          JSON_EXPANDED="$JSON_FROM_FILE"
-#          RESULT=$(echo "$JSON_EXPANDED" | jq -c '. | tostring')
-#          echo "Processed JSON: $RESULT"
-#          echo "FINAL=$RESULT" >> $GITHUB_OUTPUT
+          DICTIONARY='{"username": "${{ github.actor }}", "repository": "${{ github.repository }}", "deployment": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" }'
+          echo "SLACK_TEMPLATE_VARS_AS_STRING=$(echo "$DICTIONARY" | jq -c '. | tostring')" >> $GITHUB_OUTPUT
 
       # Create the final Slack template
-      # Echo it out into a json file for passing to the next step
+      # Start by grabbing the variable string from the final step
+      # Then pass that to the jq utility to filter a template and do some string replacement
+      # This is how we get data from Github into the Slack message
+      # We then output the final template into a json file
       - name: "Set up the Slack Template"
         id: slack_template
         run: |
-          TEMPLATE_VARS="${{ steps.template_vars.outputs.FINAL }}"
-          FILTERED_TEMPLATE=$(echo "$TEMPLATE_VARS" | jq -f './.github/workflows/slack-message-template.jq')
-          echo "$FILTERED_TEMPLATE"
-          echo "$FILTERED_TEMPLATE" >> ./slack-message.json
+          SLACK_TEMPLATE_VARS="${{ steps.template_vars.outputs.SLACK_TEMPLATE_VARS_AS_STRING }}"
+          FILTERED_SLACK_TEMPLATE=$(echo "$SLACK_TEMPLATE_VARS" | jq -f './.github/workflows/slack/templates/deployment.jq')
+          echo "$FILTERED_SLACK_TEMPLATE" >> ./.github/workflows/slack/templates/deployment-compiled.json
 
-      - name: "Dump steps context"
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-
+      # Post our message to slack
+      # We use the SLACK_CHANNEL_ID we have stored in the repos secrets
+      # We pass our compiled JSON file to the action to send to the channel
       - name: "Post to Slack"
         uses: slackapi/slack-github-action@v1.24.0
         with:
-          channel-id: "CJGLJLN1F"
-          payload-file-path: './slack-message.json'
+          channel-id: "${{ secrets.SLACK_CHANNEL_ID }}"
+          payload-file-path: './.github/workflows/slack/templates/deployment-compiled.json'
